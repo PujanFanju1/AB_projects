@@ -1,0 +1,195 @@
+---------------------------------Creating Tables----------------------------------------
+CREATE TABLE properties  
+(property_id integer, 
+representative_id integer, 
+type enum('houses','flats/apartments','bungalows','land','commercial'), 
+area_id integer, 
+regulation varchar(50)); 
+
+CREATE TABLE representatives  
+(representative_id integer PRIMARY KEY, 
+first_name varchar(255), 
+last_name varchar(255), 
+team_id integer); 
+
+CREATE TABLE teams  
+(team_id integer PRIMARY KEY, 
+supervisor_rep_id integer); 
+
+CREATE TABLE customers  
+(customer_id integer PRIMARY KEY, 
+representative_id integer, 
+first_name varchar(255), 
+last_name varchar(255)); 
+
+CREATE TABLE areas  
+(area_id integer PRIMARY KEY, 
+representative_id integer, 
+chief_rep_id integer, 
+sales_target integer); 
+
+CREATE TABLE chiefs  
+(chief_rep_id integer, 
+area_id integer); 
+
+CREATE TABLE area_rep  
+(area_id integer, 
+representative_id integer); 
+
+ALTER table customers 
+ADD CONSTRAINT fk_representative_id FOREIGN KEY (representative_id) REFERENCES representatives(representative_id) 
+ON DELETE CASCADE 
+ON UPDATE CASCADE; 
+
+ALTER table properties 
+ADD CONSTRAINT fk_area_id FOREIGN KEY (area_id) REFERENCES areas(area_id) 
+ON DELETE CASCADE 
+ON UPDATE CASCADE, 
+ADD CONSTRAINT fk_representative_ids FOREIGN KEY (representative_id) REFERENCES representatives(representative_id) 
+ON DELETE CASCADE 
+ON UPDATE CASCADE; 
+
+ALTER table chiefs 
+ADD CONSTRAINT fk_area_id_c FOREIGN KEY (area_id) REFERENCES areas(area_id) 
+ON DELETE CASCADE 
+ON UPDATE CASCADE, 
+ADD CONSTRAINT fk_chief_rep_id FOREIGN KEY (chief_rep_id) REFERENCES representatives(representative_id) 
+ON DELETE CASCADE 
+ON UPDATE CASCADE; 
+
+ALTER table representatives 
+ADD CONSTRAINT fk_team_id FOREIGN KEY (team_id) REFERENCES teams(team_id) 
+ON DELETE CASCADE 
+ON UPDATE CASCADE; 
+
+ALTER table area_rep 
+ADD CONSTRAINT fk_area_id_a FOREIGN KEY (area_id) REFERENCES areas(area_id) 
+ON DELETE CASCADE 
+ON UPDATE CASCADE, 
+ADD CONSTRAINT fk_representative_id_a FOREIGN KEY (representative_id) REFERENCES representatives(representative_id) 
+ON DELETE CASCADE 
+ON UPDATE CASCADE; 
+
+---------------------------------Inserting Data----------------------------------------
+
+INSERT INTO representatives (representative_id, first_name, last_name, team_id) 
+VALUES 
+    (101, 'John', 'Smith', 501), 
+    (102, 'Emily', 'Johnson', 502), 
+    (103, 'Michael', 'Lee', 501), 
+    (104, 'Jessica', 'Wang', 503), 
+    (105, 'William', 'Brown', 502), 
+    (106, 'Olivia', 'Davis', 503), 
+    (107, 'Ethan', 'Anderson', 501); 
+
+INSERT INTO teams (team_id, supervisor_rep_id) 
+VALUES 
+    (501, 101), 
+    (502, 102), 
+    (503, 103); 
+
+INSERT INTO customers (customer_id, representative_id, first_name, last_name) 
+VALUES 
+    (1, 101, 'David', 'Miller'), 
+    (2, 102, 'Sarah', 'Clark'), 
+    (3, 103, 'James', 'Baker'), 
+    (4, 104, 'Mary', 'Lewis'), 
+    (5, 105, 'Robert', 'Turner'), 
+    (6, 106, 'Linda', 'Wood'), 
+    (7, 107, 'Thomas', 'Martin'); 
+
+INSERT INTO areas (area_id, representative_id, sales_target) 
+VALUES 
+    (201, 104, 500000), 
+    (202, 105, 400000), 
+    (203, 106, 450000); 
+
+INSERT INTO chiefs (chief_rep_id, area_id) 
+VALUES 
+    (104, 201), 
+    (105, 202), 
+    (106, 203); 
+
+INSERT INTO area_rep (area_id, representative_id) 
+VALUES 
+    (201, 104), 
+    (201, 103), 
+    (202, 105), 
+    (202, 102), 
+    (203, 106), 
+    (203, 101), 
+    (203, 107); 
+
+INSERT INTO properties (property_id, representative_id, type, area_id, regulation) 
+VALUES 
+    (301, 101, 'houses', 201, 'Meets regulations'), 
+    (302, 102, 'flats/apartments', 202, 'Meets regulations'), 
+    (303, 103, 'bungalows', 203, 'Meets regulations'), 
+    (304, 104, 'land', 201, 'Requires review'), 
+    (305, 105, 'commercial', 202, 'Meets regulations'), 
+    (306, 106, 'houses', 203, 'Meets regulations'), 
+    (307, 107, 'flats/apartments', 203, 'Meets regulations'); 
+
+ALTER TABLE areas 
+DROP COLUMN chief_rep_id; 
+
+INSERT INTO properties (property_id, representative_id, type, area_id, regulation) 
+VALUES 
+(308, 108, 'land', 202, 'Requires review'); 
+
+ALTER TABLE areas 
+ADD Location enum('London','Paris','Berlin'); 
+
+UPDATE areas 
+SET Location = 'Berlin' 
+WHERE area_id=203; 
+SET Location = 'Paris' 
+WHERE area_id=201; 
+
+INSERT INTO representatives (representative_id, first_name, last_name, team_id) 
+VALUES 
+    (109, 'Matthew', 'Wilson', 502), 
+    (110, 'Isabella', 'Thompson', 501), 
+    (111, 'Daniel', 'Johnson', 503), 
+    (112, 'Grace', 'Martinez', 502), 
+    (113, 'Aiden', 'White', 503), 
+    (114, 'Chloe', 'Garcia', 501), 
+    (115, 'Oliver', 'Jones', 502), 
+    (116, 'Emma', 'Lopez', 501), 
+    (117, 'Mason', 'Miller', 503), 
+    (118, 'Ava', 'Brown', 502), 
+    (119, 'Lucas', 'Davis', 503), 
+    (120, 'Charlotte', 'Rodriguez', 501), 
+    (121, 'Liam', 'Smith', 502), 
+    (122, 'Amelia', 'Lee', 503); 
+
+delete from properties 
+where property_id = 308 and area_id = 201; 
+
+ALTER TABLE properties 
+ADD customer_id integer;  
+
+ALTER table properties 
+ADD CONSTRAINT fk_cust_id FOREIGN KEY (customer_id) REFERENCES customers(customer_id) 
+ON DELETE CASCADE 
+ON UPDATE CASCADE;
+
+
+UPDATE properties 
+SET customer_id = 7 
+WHERE property_id = 322; 
+
+---------------------------------Queries----------------------------------------
+--Display names of representatives, details of the properties they represent, and names of their supervisors. 
+
+select concat(r.first_name,' ',r.last_name) as rep_full_name, p.*, t.supervisor_rep_id as supervisior_id 
+from reps r 
+left join properties p on r.representative_id = p.representative_id 
+left join teams t on r.team_id = t.team_id; 
+
+-Display details of customers together with details of their areas and names of the managers of their areas. 
+
+select concat(c.first_name,' ',c.last_name) as customer_name, a.*, concat(r.first_name,' ',r.last_name) as rep_full_name 
+from customers c left join reps r on c.representative_id = r.representative_id 
+inner join area_rep ar on r.representative_id = ar.representative_id 
+inner join areas a on ar.area_id = a.area_id; 
